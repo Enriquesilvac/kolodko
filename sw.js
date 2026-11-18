@@ -9,7 +9,12 @@ self.addEventListener("fetch", e => {
   if (url.hostname.endsWith("googleapis.com") && !url.hostname.startsWith("fonts")) return; // Firestore: nunca desde caché
   const isPage = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname.endsWith("/");
   if (isPage) {
-    e.respondWith(fetch(req).then(r => { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); return r; }).catch(() => caches.match(req).then(r => r || caches.match("index.html"))));
+    // Red primero, pero si la cobertura es mala y tarda más de 3,5 s, se abre la copia guardada (no se queda la pantalla en blanco).
+    const net = fetch(req).then(r => { if (r.ok) { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); } return r; });
+    const cached = () => caches.match(req).then(r => r || caches.match("index.html"));
+    e.respondWith(Promise.race([net, new Promise(res => setTimeout(res, 3500))])
+      .then(r => r || cached().then(c => c || net))
+      .catch(() => cached().then(c => c || Response.error())));
   } else if (url.origin === location.origin || url.hostname === "www.gstatic.com" || url.hostname.startsWith("fonts.")) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => { if (r.ok || r.type === "opaque") { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); } return r; })));
   }
