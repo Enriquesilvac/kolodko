@@ -1,6 +1,7 @@
 // Caché para que la app abra aunque no haya cobertura. La página se pide primero a la red (para tener siempre la última versión).
-const C = "kolodko-v2";
-const CORE = ["./", "index.html", "icon-180.png", "icon-192.png", "icon-512.png", "manifest.webmanifest"];
+const C = "kolodko-v3";
+const CORE = ["./", "index.html", "icon-180.png", "icon-192.png", "icon-512.png", "manifest.webmanifest",
+  ...["mama","marina","carmen","quique"].flatMap(p => [`${p}-face.jpg`, `${p}-full.webp`, `${p}-cut.webp`])];
 self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
