@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caza de Kolodkos · Budapest</title>
+<meta name="description" content="17 mini estatuas de Kolodko por Budapest. 4 cazadores. Pistas, fotos y ranking en directo.">
+<meta name="theme-color" content="#10272b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kolodkos">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Caza de Kolodkos · Budapest">
+<meta property="og:description" content="17 mini estatuas, 4 cazadores, 1 ganador. Entra, elige quién eres y a buscar.">
+<meta property="og:image" content="https://enriquesilvac.github.io/kolodko/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Noche junto al Danubio + bronce de las estatuillas; viernes en rojo pimentón, sábado en verde húngaro. Una columna, pestañas abajo. */
+:root{
+  --bg:#10272b; --bg2:#0b1d20; --panel:#173438; --panel2:#1f4348;
+  --ink:#eef3ef; --muted:#9db5b1;
+  --bronze:#d4a259; --bronze-l:#f1cf8e; --bronze-d:#8f6a33;
+  --vie:#e0604f; --sab:#4fae7f;
+  --ok:#6fcf97; --warn:#f2c94c; --bad:#eb6f5a; --leg:#c9a0ff;
+  --line:rgba(255,255,255,.09);
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"Figtree",-apple-system,"Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg2);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--bronze);outline-offset:2px;border-radius:8px}
+#app{display:flex;flex-direction:column;height:100%;max-width:640px;margin:0 auto;background:radial-gradient(120% 60% at 50% -10%,#1d4a4f 0%,var(--bg) 45%,var(--bg2) 100%)}
+header{padding:calc(env(safe-area-inset-top) + 12px) 16px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(16,39,43,.6),rgba(16,39,43,0))}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.ring{width:44px;height:44px;flex:none;position:relative}
+.ring svg{width:44px;height:44px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-display);font-size:13px;color:var(--bronze-l)}
+h1{font-family:var(--f-display);font-weight:800;font-size:21px;line-height:1.05;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0;margin-top:3px}
+.flagline{height:3px;display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:2px;overflow:hidden;width:54px;margin-top:5px}
+.flagline i:nth-child(1){background:#ce2939}.flagline i:nth-child(2){background:#f0f0eb}.flagline i:nth-child(3){background:#477050}
+.playerchip{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 5px;min-height:42px;white-space:nowrap;flex:none}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#10272b;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2)}
+.sync{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on{background:var(--ok);box-shadow:0 0 0 0 rgba(111,207,151,.6);animation:pulse 2.4s infinite}
+.dot.local{background:var(--warn)} .dot.bad{background:var(--bad)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(111,207,151,.55)}70%{box-shadow:0 0 0 7px rgba(111,207,151,0)}100%{box-shadow:0 0 0 0 rgba(111,207,151,0)}}
+main{flex:1;overflow-y:auto;padding:12px 16px 28px;-webkit-overflow-scrolling:touch}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:rgba(8,22,24,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{background:none;border:0;padding:9px 4px 11px;font-size:11.5px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+nav.tabs button svg{width:23px;height:23px}
+nav.tabs button[aria-selected="true"]{color:var(--bronze)}
+nav.tabs button[aria-selected="true"]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--bronze)}
+.seg{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;white-space:nowrap;color:var(--muted);transition:background .15s,color .15s}
+.pill[aria-pressed="true"]{background:var(--bronze);border-color:var(--bronze);color:#1b1206}
+details.filters{margin-bottom:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:0 12px}
+details.filters summary{list-style:none;padding:11px 0;font-weight:700;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+details.filters summary::-webkit-details-marker{display:none}
+details.filters summary span{color:var(--muted);font-weight:600;font-size:12px}
+.fbody{display:flex;flex-direction:column;gap:7px;padding-bottom:12px}
+.flabel{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.daytabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.daytabs button{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 6px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.daytabs button[aria-pressed="true"]{color:#10272b;border-color:transparent}
+.daytabs button[data-v="all"][aria-pressed="true"]{background:var(--bronze)}
+.daytabs button[data-v="vie"][aria-pressed="true"]{background:var(--vie)}
+.daytabs button[data-v="sab"][aria-pressed="true"]{background:var(--sab)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.tile{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.tile b{display:block;font-family:var(--f-display);font-size:25px;line-height:1;font-variant-numeric:tabular-nums}
+.tile span{font-size:11.5px;color:var(--muted)}
+.tile.me b{color:var(--bronze-l)}
+.grouph{font-family:var(--f-display);font-weight:800;font-size:16px;margin:16px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.grouph.vie{color:var(--vie)} .grouph.sab{color:var(--sab)} .grouph.other{color:var(--bronze)}
+.grouph span{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:500}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{display:grid;grid-template-columns:50px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--dc,var(--bronze));border-radius:16px;padding:10px 12px;text-align:left;width:100%;transition:transform .12s ease}
+.card:active{transform:scale(.98)}
+.card.found{background:linear-gradient(100deg,rgba(111,207,151,.12),var(--panel) 55%);border-color:rgba(111,207,151,.35);border-left-color:var(--ok)}
+.card.gone{border-style:dashed}
+.medal{width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--bronze-l),var(--bronze) 45%,var(--bronze-d));display:grid;place-items:center;color:#2a1b07;font-family:var(--f-display);font-weight:800;font-size:18px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.25)}
+.card.found .medal{background:radial-gradient(circle at 35% 30%,#d4f7e2,var(--ok) 50%,#2f8a57);color:#0d3320}
+.card.gone .medal{background:radial-gradient(circle at 35% 30%,#e8d8ff,var(--leg) 50%,#6a4aa0)}
+.ctitle{font-weight:700;font-size:15px;line-height:1.25}
+.cmeta{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:5px}
+.tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--muted)}
+.tag.easy{color:var(--ok)} .tag.mid{color:var(--warn)} .tag.hard{color:var(--bad)} .tag.leg{color:var(--leg)}
+.when{font-size:12px;color:var(--muted);display:block;margin-top:4px}
+.pts{font-family:var(--f-display);font-weight:800;font-size:19px;color:var(--bronze);text-align:right;font-variant-numeric:tabular-nums}
+.pts small{display:block;font-family:var(--f-body);font-size:10px;font-weight:600;color:var(--muted)}
+.finders{display:flex;margin-top:6px}
+.finders .av{width:22px;height:22px;font-size:11px;border:2px solid var(--panel);margin-right:-6px}
+.empty{color:var(--muted);text-align:center;padding:28px 10px}
+.empty .big{font-family:var(--f-display);font-size:20px;color:var(--ink);margin:10px 0}
+.banner{border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 10px;border:1px solid}
+.banner.warn{border-color:rgba(242,201,76,.35);background:rgba(242,201,76,.08)}
+.banner.bad{border-color:rgba(235,111,90,.4);background:rgba(235,111,90,.1)}
+.banner.leg{border-color:rgba(201,160,255,.4);background:rgba(201,160,255,.08)}
+/* hojas */
+.sheetwrap{position:fixed;inset:0;background:rgba(3,10,11,.62);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheetwrap.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92%;overflow-y:auto;border-radius:22px 22px 0 0;border-top:1px solid var(--line);padding:16px 18px calc(env(safe-area-inset-bottom) + 22px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.sheet h2{font-family:var(--f-display);font-weight:800;font-size:24px;line-height:1.12;margin:0 0 6px;text-wrap:balance}
+.sheet p{margin:8px 0;max-width:65ch}
+.hint{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0}
+.hint h3{margin:0 0 4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--bronze)}
+.hint.exact{border-color:rgba(212,162,89,.5)}
+.hint.locked{display:flex;justify-content:space-between;align-items:center;gap:10px;border-style:dashed}
+.btn{border-radius:12px;padding:12px 16px;font-weight:700;background:var(--panel2);border:1px solid var(--line);transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(180deg,var(--bronze-l),var(--bronze));color:#1b1206;border-color:var(--bronze);box-shadow:0 4px 14px rgba(212,162,89,.25)}
+.btn.small{padding:8px 12px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.row > *{flex:1 1 140px;text-align:center;text-decoration:none}
+a.btn{display:inline-block;color:var(--ink)}
+.note{font-size:12.5px;color:var(--muted)}
+.whofound{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.whofound .line{display:flex;align-items:center;gap:10px;font-size:14px}
+.whofound img{width:52px;height:52px;object-fit:cover;border-radius:10px}
+/* ranking */
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:8px;margin:6px 0 16px}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pod .av{width:48px;height:48px;font-size:20px}
+.pod.p1 .av{width:62px;height:62px;font-size:26px;box-shadow:0 0 0 3px var(--bronze),0 0 24px rgba(212,162,89,.45)}
+.pod .nm{font-weight:700;font-size:13.5px}
+.pod .stand{width:100%;border-radius:12px 12px 4px 4px;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;color:#1b1206}
+.pod.p1 .stand{height:92px;background:linear-gradient(180deg,var(--bronze-l),var(--bronze));font-size:30px}
+.pod.p2 .stand{height:70px;background:linear-gradient(180deg,#e7ecef,#aab6bb);font-size:24px}
+.pod.p3 .stand{height:54px;background:linear-gradient(180deg,#e3b38a,#a8693e);font-size:22px}
+.pod .stand small{display:block;font-family:var(--f-body);font-size:11px;font-weight:700;text-align:center;opacity:.8}
+.rank{display:flex;flex-direction:column;gap:10px}
+.rk{display:grid;grid-template-columns:26px 42px 1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}
+.rk .pos{font-family:var(--f-display);font-weight:800;font-size:19px;color:var(--muted);text-align:center}
+.rk .av{width:42px;height:42px;font-size:18px}
+.rk .nm{font-weight:700;font-size:16px}
+.rk .sub{font-size:12px;color:var(--muted)}
+.rk .score{font-family:var(--f-display);font-weight:800;font-size:25px;font-variant-numeric:tabular-nums;color:var(--bronze)}
+.bars{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.bar{display:grid;grid-template-columns:118px 1fr 40px;gap:8px;align-items:center;font-size:12px}
+.track{height:7px;border-radius:4px;background:var(--panel2);overflow:hidden}
+.fill{height:100%;display:block;border-radius:4px;transition:width .5s ease}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:11.5px;font-weight:700;border:1px solid rgba(212,162,89,.5);color:var(--bronze);border-radius:999px;padding:3px 9px}
+.feed{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.feed .it{display:flex;gap:10px;align-items:center;font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.feed .it b{color:var(--bronze-l)}
+/* álbum */
+.album{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.ph{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;padding:0;text-align:left}
+.ph img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.ph .phc{display:flex;gap:8px;align-items:center;padding:7px 9px;font-size:12px}
+.ph .phc .av{width:22px;height:22px;font-size:11px}
+.ph b{display:block;font-size:12.5px;line-height:1.2}
+.choose{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.choose button{display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;text-align:left;font-weight:700;font-size:16px}
+.choose button[aria-pressed="true"]{border-color:var(--bronze);background:var(--panel2);box-shadow:0 0 0 2px rgba(212,162,89,.25)}
+.choose .av{width:38px;height:38px;font-size:17px}
+.prose h3{font-family:var(--f-display);font-size:17px;margin:18px 0 6px;color:var(--bronze)}
+.prose li{margin:5px 0}
+table.pt{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.pt td,table.pt th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:12px;z-index:40;display:none;max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+/* celebración */
+#celebrate{position:fixed;inset:0;z-index:50;pointer-events:none;display:none;place-items:center}
+#celebrate.on{display:grid}
+#celebrate .score{font-family:var(--f-display);font-weight:800;color:var(--bronze-l);text-align:center;text-shadow:0 4px 24px rgba(0,0,0,.6)}
+#celebrate .score b{display:block;font-size:76px;line-height:1}
+#celebrate .score span{font-size:20px;color:var(--ink)}
+#confetti{position:fixed;inset:0;z-index:49;pointer-events:none}
+/* bienvenida */
+#welcome{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:rgba(3,10,11,.78);padding:24px}
+#welcome.on{display:grid}
+#welcome .wcard{background:radial-gradient(120% 80% at 50% 0%,#24555a,var(--bg));border:1px solid var(--line);border-radius:24px;padding:28px 22px 22px;text-align:center;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#welcome .wav{width:84px;height:84px;font-size:38px;margin:0 auto 10px;box-shadow:0 0 0 4px rgba(255,255,255,.12),0 0 40px rgba(212,162,89,.35)}
+#welcome h2{font-family:var(--f-display);font-weight:800;font-size:30px;margin:6px 0 8px}
+#welcome .wmsg{font-family:var(--f-display);font-weight:600;font-size:22px;line-height:1.25;color:var(--bronze-l);margin:0 0 22px;text-wrap:balance}
+#welcome .btn{width:100%;font-size:17px}
+@media (prefers-reduced-motion:no-preference){#welcome.on .wcard{animation:pop .55s cubic-bezier(.2,1.4,.4,1) both}#welcome.on .wav{animation:pop .6s cubic-bezier(.2,1.4,.4,1) .12s both}}
+/* pantalla de inicio */
+#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(80% 60% at 50% 40%,#1f4a4f,#0b1d20);transition:opacity .45s ease,visibility .45s}
+#splash.hide{opacity:0;visibility:hidden}
+#splash .in{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:24px}
+#splash .big{width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6dca0,var(--bronze) 50%,#7f5b2a);display:grid;place-items:center;box-shadow:0 0 0 6px rgba(212,162,89,.18),0 0 60px rgba(212,162,89,.35)}
+#splash .big svg{width:62px;height:62px}
+#splash h2{font-family:var(--f-display);font-weight:800;font-size:34px;margin:6px 0 0;line-height:1}
+#splash h2 em{font-style:normal;color:var(--bronze)}
+#splash p{margin:0;color:var(--muted);font-size:14px}
+#splash .flagline{width:80px;height:4px;margin:4px auto 0}
+@media (prefers-reduced-motion:no-preference){
+  #splash .big{animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+  #splash .big svg{animation:sweep 1.4s ease-in-out .3s both}
+  #splash h2,#splash p{animation:rise .6s ease .25s both}
+  .sheet{animation:up .24s ease-out}
+  #celebrate.on .score{animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+  .card{animation:fadein .3s ease both}
+}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes sweep{0%{transform:translate(-8px,6px) rotate(-12deg)}50%{transform:translate(8px,-4px) rotate(10deg)}100%{transform:none}}
+@keyframes rise{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+@keyframes fadein{from{opacity:.4}to{opacity:1}}
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true"><div class="in">
+  <div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="#30200a" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></div>
+  <h2>Caza de <em>Kolodkos</em></h2>
+  <p>Budapest · 19–22 de noviembre</p>
+  <div class="flagline"><i></i><i></i><i></i></div>
+</div></div>
+<div id="app">
+  <header>
+    <div class="toprow">
+      <div class="brand">
+        <div class="ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="5"/><circle id="ringfill" cx="22" cy="22" r="18" fill="none" stroke="#d4a259" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" style="transition:stroke-dashoffset .6s ease"/></svg><b id="ringtxt">0</b></div>
+        <div><h1>Caza de Kolodkos<small>Budapest · 19–22 nov</small></h1></div>
+      </div>
+      <button class="playerchip" id="who" aria-label="Cambiar de jugador"></button>
+    </div>
+    <div class="sync" id="sync"><span class="dot"></span><span>Conectando con la partida…</span></div>
+  </header>
+  <main id="main"></main>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="hunt" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg>Estatuas</button>
+    <button role="tab" data-tab="rank" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>Ranking</button>
+    <button role="tab" data-tab="album" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Álbum</button>
+    <button role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button>
+  </nav>
+</div>
+<div class="sheetwrap" id="sheetwrap"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<canvas id="confetti" width="0" height="0"></canvas>
+<div id="celebrate"><div class="score"><b id="celpts">+20</b><span id="celtxt"></span></div></div>
+<div class="toast" id="toast" role="status"></div>
+<input type="file" id="photo" accept="image/*" hidden>
+<script>
+/* ===================== DATOS: SOLO LAS ESTATUILLAS DE NUESTRA RUTA ===================== */
+const DAYS = {vie:"Viernes 20", sab:"Sábado 21"};
+const DAYCOL = {vie:"var(--vie)", sab:"var(--sab)"};
+const DAY_ORDER = ["vie","sab"];
+const THEMES = {cine:"Dibujos y cine", hist:"Historia", cien:"Ciencia e inventos", pers:"Personajes", humor:"Humor y leyendas"};
+const DIFF = {f:{n:"Fácil",c:"easy",p:10}, m:{n:"Media",c:"mid",p:20}, d:{n:"Difícil",c:"hard",p:30}, l:{n:"Legendaria",c:"leg",p:100}};
+const PLAYERS = [
+  {id:"mama",   name:"Mamá",   color:"#f28fad"},
+  {id:"marina", name:"Marina", color:"#56b4e9"},
+  {id:"carmen", name:"Carmen", color:"#6fcf97"},
+  {id:"quique", name:"Quique", color:"#d4a259"},
+];
+const PBYID = Object.fromEntries(PLAYERS.map(p=>[p.id,p]));
+// k: letra para el código de marcador (no cambiar). w: cuándo pasamos por allí según el plan.
+const S = [
+ {k:"a",id:"kermit",n:"La rana Gustavo",d:"vie",w:"Viernes ~10:00, durante el free tour",t:"cine",x:"f",q:"Szabadság tér 10, Budapest",
+  a:"Gustavo (Kermit), de los Teleñecos. Kolodko lo puso aquí como guiño a cuando las ancas de rana se pusieron de moda en Hungría a finales del siglo XIX.",
+  h:["Un famoso de los Teleñecos vive en la plaza por la que pasa el free tour.","Plaza de la Libertad (Szabadság tér), cerca de la entrada del aparcamiento subterráneo.","Sentado al pie de una valla verde. En invierno los vecinos a veces le ponen bufanda."]},
+ {k:"b",id:"hacha",n:"El hacha sobre el cojín",d:"vie",w:"Viernes ~10:00, durante el free tour",t:"hist",x:"m",q:"Szabadság tér 15, Budapest",
+  a:"Aquí había un gorro ruso (ushanka) sobre un cojín. Un político lo destrozó a hachazos y lo tiró al Danubio, y Kolodko respondió poniendo en su lugar el hacha.",
+  h:["Antes aquí había un gorro ruso de bronce. Alguien acabó con él… buscad el arma del crimen.","Plaza de la Libertad, número 15.","Un hacha diminuta sobre un cojín de terciopelo, a ras de suelo."]},
+ {k:"c",id:"herzl",n:"Theodor Herzl en bicicleta",d:"vie",w:"Viernes ~12:30, en la Gran Sinagoga",t:"pers",x:"m",q:"Dohány utca 1, Budapest",
+  a:"El escritor Theodor Herzl nació en esta calle en 1860. Kolodko lo representa apoyado en su bicicleta, junto a la Gran Sinagoga.",
+  h:["Un escritor nacido en esta misma calle en 1860 descansa junto a su bicicleta.","Alrededor de la Gran Sinagoga de la calle Dohány.","Rodead la sinagoga por el lado de Dohány utca 1 y la plaza Herzl Tivadar; mirad a la altura de las vallas y los muros."]},
+ {k:"d",id:"buzo",n:"El buzo con la llave",d:"vie",w:"Viernes ~15:00, en el New York Café",t:"humor",x:"f",q:"Dohány utca 53, Budapest",
+  a:"Cuenta la leyenda que, al inaugurar el New York Café, unos escritores tiraron su llave al Danubio para que el café no cerrara nunca. El buzo por fin la ha encontrado.",
+  h:["Alguien ha bajado al fondo del Danubio a buscar la llave de un café que no debía cerrar nunca.","Junto al New York Café, en la avenida Erzsébet körút.","Esquina de Osvát utca con Dohány utca, al lado del café."]},
+ {k:"e",id:"lisa",n:"Lisa Simpson como Juana de Arco",d:"vie",w:"Viernes ~15:30, en el Mercado Central",t:"cine",x:"m",q:"Fővám tér 8, Budapest",
+  a:"Lisa Simpson atada a la hoguera como Juana de Arco. La primera estaba en la plaza Jászai Mari y desapareció; esta es la nueva versión.",
+  h:["La niña más lista de Springfield está atada como una heroína francesa.","Plaza Fővám, junto al Mercado Central.","Cerca de la esquina sur de la Universidad Corvinus, donde el tranvía 2 sale del túnel bajo el Puente de la Libertad. Atada a un poste."]},
+ {k:"f",id:"franz",n:"Francisco José en la hamaca",d:"vie",w:"Viernes ~15:30, en el Mercado Central",t:"hist",x:"m",q:"Szabadság híd, Budapest",
+  a:"El Puente de la Libertad se llamó al principio Puente de Francisco José, por el emperador. Kolodko lo ha puesto a echarse la siesta en una hamaca diminuta.",
+  h:["El puente verde llevó el nombre de un emperador… que ahora descansa en él.","Puente de la Libertad, en el lado de Pest, frente al Mercado Central.","En el pilar del puente del lado de Pest, tumbado en una hamaca diminuta."]},
+ {k:"g",id:"libido",n:"El perro globo",d:"vie",w:"Viernes ~18:00, antes del crucero",t:"humor",x:"m",q:"Belgrád rakpart, Budapest",
+  a:"Un perro hecho con un globo, como los famosos perros-globo del artista Jeff Koons, olfateando un hueso.",
+  h:["Un perro de globo, como los del artista Jeff Koons, ha encontrado un hueso.","Paseo del Danubio (Dunakorzó / Belgrád rakpart), cerca del muelle del crucero.","Entre los postes de la valla, frente a la entrada del restaurante Corso."]},
+ {k:"h",id:"pinocho",n:"Pinocho colgado",d:"vie",w:"Viernes ~19:15, después del crucero",t:"cine",x:"m",q:"Széchenyi István tér, Budapest",
+  a:"Pinocho, el muñeco al que le crece la nariz al mentir. Una de las estatuillas más nuevas: apareció en julio de 2026.",
+  h:["Un muñeco de madera al que le crece la nariz… está colgando.","Parada del tranvía 2 en la plaza Széchenyi István, junto a la Academia de Ciencias.","En la parada del tranvía 2 del lado del río. Ya será de noche: usad la linterna del móvil."]},
+ {k:"i",id:"fred",n:"Piszkos Fred, el capitán",d:"vie",w:"Viernes ~19:15, después del crucero",t:"pers",x:"d",q:"Antall József rakpart, Budapest",
+  a:"El capitán Fred «el Sucio», protagonista de las novelas de aventuras de Jenő Rejtő, muy populares en Hungría. Va junto a su baúl de barco.",
+  h:["Un capitán de novela, famoso por lo poco que se lava, espera junto a su baúl.","Orilla de Pest, entre el Puente de las Cadenas y la Academia de Ciencias.","Antall József rakpart, cerca de la Academia (MTA). Buscad un baúl de barco en miniatura."]},
+ {k:"j",id:"conejo",n:"El conejo de orejas a cuadros",d:"sab",w:"Sábado ~11:45, en el Palacio Real",t:"cine",x:"f",q:"Szent György tér, Budapest",
+  a:"El protagonista de unos dibujos animados húngaros de los años 70 vigila la ciudad con prismáticos desde el sitio más alto de todas las estatuillas.",
+  h:["Un conejo de dibujos de los 70 vigila Budapest con sus prismáticos.","Castillo de Buda, junto a la estación de arriba del funicular.","Sobre el muro de contención junto a la estación superior del funicular, en Szent György tér."]},
+ {k:"k",id:"fokukac",n:"Főkukac, el gusano",d:"sab",w:"Sábado ~12:30, bajando al río",t:"cine",x:"f",q:"Bem rakpart 15, Budapest",
+  a:"La primera estatuilla de Kolodko en Hungría: el gusano alegre de los dibujos de los 80 «El gran pescador». En invierno a veces le tejen gorros.",
+  h:["La primera de todas: un gusano de dibujos de los 80 con muy buenas vistas al río.","Orilla de Buda (Bem rakpart), frente al Parlamento.","En el muro del muelle de Bem rakpart 15, junto a la parada de tranvía Halász utca."]},
+ {k:"l",id:"tanque",n:"El tanque triste",d:"sab",w:"Sábado ~12:45, orilla de Buda",t:"hist",x:"m",q:"Batthyány tér, Bem rakpart, Budapest",
+  a:"Un tanque de juguete con el cañón caído, en recuerdo de la revolución de 1956, aplastada por los tanques soviéticos.",
+  h:["Un tanque al que se le ha caído el cañón de pena. Recuerda el año 1956.","Orilla de Buda, cerca del metro Batthyány tér.","En Bem rakpart, mirando al Parlamento, por donde estaba el antiguo puente Kossuth."]},
+ {k:"m",id:"rubik",n:"El cubo de Rubik",d:"sab",w:"Sábado ~12:45, orilla de Buda",t:"cien",x:"d",q:"Batthyány tér, Bem rakpart, Budapest",
+  a:"Homenaje al cubo de Rubik, el rompecabezas que inventó en Budapest Ernő Rubik.",
+  h:["El rompecabezas más famoso del mundo es húngaro.","Orilla de Buda, cerca de la plaza Batthyány, mirando al Parlamento.","En las escaleras que bajan de Bem rakpart al paseo inferior (Sztehlo Gábor rakpart)."]},
+ {k:"n",id:"dinero",n:"El soplador de billetes",d:"sab",w:"Sábado ~16:15, volviendo al hotel",t:"hist",x:"f",q:"Bank utca, Hold utca, Budapest",
+  a:"Un trabajador que sopla billetes de pengő. Recuerda la hiperinflación de 1946, la peor de la historia, cuando los precios se multiplicaban sin parar. Apareció en julio de 2026.",
+  h:["En 1946 los billetes no valían nada… y ahora se los lleva el viento.","Alrededor del Banco Nacional de Hungría, a 2 minutos del hotel.","En la valla de la esquina de Hold utca con Bank utca (otras guías dicen la esquina de Hold utca con Szabadság tér). Rodead el edificio."]},
+ {k:"o",id:"dracula",n:"Drácula leyendo (desaparecido)",d:"sab",w:"Sábado ~17:45, en el castillo de Vajdahunyad",t:"cine",x:"l",gone:true,q:"Vajdahunyad vára, Budapest",
+  a:"Drácula con la cara de Béla Lugosi, el actor húngaro que lo hizo famoso en el cine, sentado leyendo un libro junto al castillo de Vajdahunyad. Desapareció en julio de 2026 y lo está buscando la policía.",
+  h:["El conde más famoso, con la cara de un actor húngaro, leyendo junto a un castillo de cuento.","Junto al castillo de Vajdahunyad, en el parque Városliget.","Se lo llevaron en julio de 2026. Si ha vuelto, estará junto al castillo. ¡Si lo encontráis, 100 puntos!"]},
+ {k:"p",id:"zsigmondy",n:"Vilmos Zsigmondy",d:"sab",w:"Sábado ~18:00, frente al Balneario Széchenyi",t:"cien",x:"m",q:"Széchenyi gyógyfürdő, Budapest",
+  a:"El ingeniero que perforó el pozo de agua termal que alimenta el Balneario Széchenyi, representado como un bañista diminuto. Apareció el 14 de septiembre de 2026.",
+  h:["Sin este ingeniero no habría agua caliente en el balneario más famoso.","Parque Városliget, frente al Balneario Széchenyi.","En una barandilla metálica del parque, frente a la entrada principal del balneario."]},
+ {k:"q",id:"skala",n:"Skála Kópé",d:"sab",w:"Sábado ~19:30, en la cena del McDonald's",t:"pers",x:"m",q:"Nyugati tér, Budapest",
+  a:"La mascota de los antiguos grandes almacenes Skála de los años 80, sentada en una silla con un corazón rojo que brilla en el pecho: «su corazón pertenece a los compradores».",
+  h:["Una mascota publicitaria de los 80 lleva el corazón por fuera.","Plaza Nyugati, al lado del McDonald's de la estación.","Delante del edificio de los antiguos almacenes Skála Metró, en Nyugati tér."]},
+];
+const BYID = Object.fromEntries(S.map(s=>[s.id,s]));
+const BYK = Object.fromEntries(S.map(s=>[s.k,s]));
+const HINT_MULT = [1,0.8,0.6];
+const FIRST_BONUS = 5;
+
+
+/* ===================== CONEXIÓN CON FIREBASE ===================== */
+const FIREBASE_CONFIG = {apiKey:"AIzaSyB6SQhNBF0fzRH_Eks_6puKyEmfs0AR4dc",authDomain:"kolodko-budapest.firebaseapp.com",projectId:"kolodko-budapest",storageBucket:"kolodko-budapest.firebasestorage.app",messagingSenderId:"1051888427075",appId:"1:1051888427075:web:f368b48fcce1732908f4f6"};
+const GAME = "kolodko-budapest-ae04c8be";
+const FB_VER = "10.12.2";
+
+/* ===================== ESTADO LOCAL (copia de seguridad en el móvil) ===================== */
+const LS = "kolodko-comun-v2";
+function lsGet(k,d){try{const v=localStorage.getItem(LS+":"+k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(LS+":"+k,JSON.stringify(v));return true}catch(e){return false}}
+const state = {
+  finds: lsGet("mirror-finds",{}), hints: lsGet("mirror-hints",{}), photos: {},
+  conn:"connecting", err:"", me:lsGet("me",null),
+  tab:"hunt", fDay:"all", fTheme:"all", fDiff:"all", sort:"day"
+};
+// Cola de cambios propios que aún no ha confirmado el servidor: si el móvil se cierra o falla Firebase, se reenvían al volver.
+let outbox = lsGet("outbox",{});
+function saveOutbox(){ lsSet("outbox",outbox); }
+// Lo pendiente se aplica también a la vista, para que nunca "desaparezca" un hallazgo propio.
+function applyOutbox(){ for(const [k,o] of Object.entries(outbox)){ if(o.data===null) delete state[o.c][o.id]; else state[o.c][o.id]=o.data; } }
+applyOutbox();
+
+let fb=null, connecting=false;
+async function connect(){
+  if(fb||connecting) return;
+  if(!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey){ state.conn="noconfig"; render(); return; }
+  connecting=true;
+  try{
+    const appM = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app.js`);
+    const fsM  = await import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-firestore.js`);
+    const app = appM.initializeApp(FIREBASE_CONFIG);
+    let db;
+    try{ db = fsM.initializeFirestore(app,{localCache:fsM.persistentLocalCache({tabManager:fsM.persistentMultipleTabManager()})}); }
+    catch(e){ db = fsM.getFirestore(app); }
+    fb = {db, ...fsM};
+    const slow = setTimeout(()=>{ if(state.conn==="connecting"){ state.conn="slow"; render(); } }, 10000);
+    for(const c of ["finds","hints","photos"]){
+      fsM.onSnapshot(fsM.collection(db,"partidas",GAME,c), {includeMetadataChanges:true}, snap=>{
+        const o={}; snap.docs.forEach(d=>{o[d.id]=d.data()}); state[c]=o;
+        applyOutbox();
+        if(c!=="photos") lsSet("mirror-"+c, state[c]);
+        if(!snap.metadata.fromCache){ clearTimeout(slow); state.conn="online"; }
+        else if(state.conn!=="online") state.conn="offline";
+        scheduleRender();
+      }, err=>{ clearTimeout(slow); state.conn="error"; state.err=(err&&err.code)||""; render(); });
+    }
+    flushOutbox();
+    window.addEventListener("online", flushOutbox);
+  }catch(e){
+    fb=null; state.conn = navigator.onLine===false ? "offline" : "error"; state.err="no se pudo cargar"; render();
+    setTimeout(()=>{ connecting=false; connect(); }, 15000); return;
+  }
+  connecting=false;
+}
+function ref(c,id){ return fb.doc(fb.db,"partidas",GAME,c,id); }
+function send(key){
+  const o=outbox[key]; if(!o||!fb) return;
+  const p = o.data===null ? fb.deleteDoc(ref(o.c,o.id)) : fb.setDoc(ref(o.c,o.id),o.data);
+  p.then(()=>{ if(outbox[key]===o){ delete outbox[key]; saveOutbox(); } })
+   .catch(e=>{ if(e&&e.code==="permission-denied"){ toast("La partida no acepta cambios (reglas de Firestore)."); delete outbox[key]; saveOutbox(); } });
+}
+function flushOutbox(){ Object.keys(outbox).forEach(send); }
+function write(c,id,data){
+  const key=c+"/"+id;
+  outbox[key]={c,id,data};
+  if(!saveOutbox() && c==="photos"){ /* sin espacio local para la foto: se envía igual */ }
+  if(data===null) delete state[c][id]; else state[c][id]=data;
+  if(c!=="photos") lsSet("mirror-"+c, state[c]);
+  send(key);
+  if(!fb) connect();
+}
+
+/* ===================== PUNTOS ===================== */
+function hintLevel(sid,pid){ return Math.min(3,Math.max(1,(state.hints[sid+"__"+pid]||{}).level||1)); }
+function validFind(f){ return f && BYID[f.sid] && PBYID[f.pid] && typeof f.ts==="number"; }
+function findsFor(sid){ return Object.values(state.finds).filter(f=>validFind(f)&&f.sid===sid).sort((a,b)=>a.ts-b.ts||a.pid.localeCompare(b.pid)); }
+function isFirst(f){ const fl=findsFor(f.sid)[0]; return fl && fl.pid===f.pid; }
+function basePts(s,lvl){ return Math.round(DIFF[s.x].p*HINT_MULT[Math.min(3,Math.max(1,lvl||1))-1]); }
+function pointsOf(f){ const s=BYID[f.sid]; return s ? basePts(s,f.hints)+(isFirst(f)?FIRST_BONUS:0) : 0; }
+function playerStats(pid){
+  const fs=Object.values(state.finds).filter(f=>validFind(f)&&f.pid===pid);
+  const byTheme={}; Object.keys(THEMES).forEach(t=>byTheme[t]=0); fs.forEach(f=>byTheme[BYID[f.sid].t]++);
+  return {pts:fs.reduce((a,f)=>a+pointsOf(f),0), n:fs.length, firsts:fs.filter(isFirst).length, byTheme, fs};
+}
+const totalByTheme={}; Object.keys(THEMES).forEach(t=>totalByTheme[t]=S.filter(s=>s.t===t&&!s.gone).length);
+const TOTAL = S.filter(s=>!s.gone).length;
+function photoOf(sid,pid){ const p=state.photos[sid+"__"+pid]; return p&&typeof p.data==="string"&&p.data.startsWith("data:image/")?p.data:""; }
+
+/* ===================== UTILIDADES ===================== */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function av(p,cls=""){return `<span class="av ${cls}" style="background:${p.color}">${esc(p.name.charAt(0))}</span>`}
+function mapsUrl(s){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.q)}
+function photosUrl(s){return "https://www.google.com/search?tbm=isch&q="+encodeURIComponent("Kolodko "+s.n.replace(/\(.*\)/,"")+" Budapest")}
+let toastT; function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>t.style.display="none",2800)}
+function when(ts){const d=new Date(ts);return d.toLocaleDateString("es-ES",{weekday:"short"})+" "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}
+const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms) }catch(e){} }
+
+/* ===================== CELEBRACIÓN ===================== */
+function celebrate(pts, name){
+  const c=document.getElementById("celebrate");
+  document.getElementById("celpts").textContent="+"+pts;
+  document.getElementById("celtxt").textContent="¡"+name+" la ha encontrado!";
+  c.classList.add("on"); buzz([30,40,60]);
+  setTimeout(()=>c.classList.remove("on"),1600);
+  if(reduce) return;
+  const cv=document.getElementById("confetti"), ctx=cv.getContext("2d");
+  const W=cv.width=innerWidth*devicePixelRatio, H=cv.height=innerHeight*devicePixelRatio;
+  cv.style.width=innerWidth+"px"; cv.style.height=innerHeight+"px";
+  const cols=["#d4a259","#f1cf8e","#ce2939","#f0f0eb","#477050","#6fcf97"];
+  const P=Array.from({length:120},()=>({x:W/2,y:H*0.45,vx:(Math.random()-.5)*W*0.03,vy:-Math.random()*H*0.025-H*0.008,r:(4+Math.random()*6)*devicePixelRatio,c:cols[Math.random()*cols.length|0],a:Math.random()*6,va:(Math.random()-.5)*0.4}));
+  const t0=performance.now();
+  (function frame(t){
+    const dt=Math.min(32,t-(frame.lt||t))/16; frame.lt=t;
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){ p.vy+=H*0.0009*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.a+=p.va*dt;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); ctx.restore(); }
+    if(t-t0<1800) requestAnimationFrame(frame); else ctx.clearRect(0,0,W,H);
+  })(t0);
+}
+
+/* ===================== VISTAS ===================== */
+const CONN = {
+  connecting:["","Conectando con la partida…"],
+  online:["on","Partida en común · todo se comparte al momento"],
+  offline:["local","Sin cobertura · se guarda y se sube al volver"],
+  slow:["local","Conexión lenta · lo que marques se subirá después"],
+  noconfig:["bad","Falta conectar Firebase"],
+  error:["bad","Sin conexión con la partida · reintentando"],
+};
+let rq=false; function scheduleRender(){ if(rq) return; rq=true; requestAnimationFrame(()=>{rq=false;render()}); }
+function render(){
+  const meP=PBYID[state.me], who=document.getElementById("who");
+  who.innerHTML = meP ? `${av(meP)}<span>${esc(meP.name)}</span>` : `<span class="av" style="background:var(--muted)">?</span><span>¿Quién eres?</span>`;
+  const pend=Object.keys(outbox).length;
+  let [c,t]=CONN[state.conn]||CONN.connecting;
+  if(pend && state.conn!=="online") t+=` (${pend} pendiente${pend>1?"s":""})`;
+  document.getElementById("sync").innerHTML=`<span class="dot ${c}"></span><span></span>`;
+  document.getElementById("sync").lastChild.textContent=t;
+  const groupFound=new Set(Object.values(state.finds).filter(validFind).map(f=>f.sid).filter(id=>!BYID[id].gone)).size;
+  document.getElementById("ringfill").style.strokeDashoffset = (113.1*(1-groupFound/TOTAL)).toFixed(1);
+  document.getElementById("ringtxt").textContent = groupFound;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===state.tab));
+  const m=document.getElementById("main"), y=m.scrollTop;
+  const open = m.querySelector("details.filters")?.open;
+  m.innerHTML=({hunt:viewHunt, rank:viewRank, album:viewAlbum, info:viewInfo})[state.tab]();
+  if(open){ const d=m.querySelector("details.filters"); if(d) d.open=true; }
+  m.scrollTop=y;
+  bindMain();
+  if(sheetOpen && sheetOpen.live) sheetOpen();
+}
+function banner(){
+  if(state.conn==="noconfig") return `<div class="banner bad">Este archivo no está conectado a Firebase.</div>`;
+  if(state.conn==="error") return `<div class="banner bad">No hay conexión con la partida. Lo que marques se guarda en este móvil y se subirá solo en cuanto vuelva.</div>`;
+  return "";
+}
+function card(s){
+  const fs=findsFor(s.id), mine=state.me&&fs.some(f=>f.pid===state.me), d=DIFF[s.x];
+  return `<button class="card ${mine?"found":""} ${s.gone?"gone":""}" style="--dc:${DAYCOL[s.d]}" data-open="${s.id}">
+    <span class="medal">${mine?"✓":S.indexOf(s)+1}</span>
+    <span><span class="ctitle">${esc(s.n)}</span>
+      <span class="cmeta"><span class="tag ${d.c}">${d.n}</span><span class="tag">${esc(THEMES[s.t])}</span></span>
+      <span class="when">${esc(s.w)}</span>
+      ${fs.length?`<span class="finders">${fs.map(f=>av(PBYID[f.pid])).join("")}</span>`:""}
+    </span>
+    <span class="pts">${d.p}<small>puntos</small></span>
+  </button>`;
+}
+function viewHunt(){
+  const pills=(key,opts)=>opts.map(([v,l])=>`<button class="pill" data-f="${key}" data-v="${v}" aria-pressed="${state[key]===v}">${esc(l)}</button>`).join("");
+  const list=S.filter(s=>(state.fDay==="all"||s.d===state.fDay)&&(state.fTheme==="all"||s.t===state.fTheme)&&(state.fDiff==="all"||s.x===state.fDiff));
+  const me=PBYID[state.me]?playerStats(state.me):null;
+  const groupFound=new Set(Object.values(state.finds).filter(validFind).map(f=>f.sid)).size;
+  const active=(state.fTheme!=="all")+(state.fDiff!=="all")+(state.sort!=="day");
+  let html=banner()+(!state.me?`<div class="banner warn">Primero dinos quién eres: pulsa «¿Quién eres?» arriba a la derecha.</div>`:"")+
+   `<div class="summary">
+     <div class="tile"><b>${groupFound}<span style="font-size:14px;color:var(--muted)">/${TOTAL}</span></b><span>vistas por el grupo</span></div>
+     <div class="tile me"><b>${me?me.n:"–"}</b><span>${me?"encontradas por ti":"elige quién eres"}</span></div>
+     <div class="tile me"><b>${me?me.pts:"–"}</b><span>tus puntos</span></div>
+   </div>
+   <div class="daytabs">${[["all","Los dos días"],["vie","Viernes"],["sab","Sábado"]].map(([v,l])=>`<button data-f="fDay" data-v="${v}" aria-pressed="${state.fDay===v}">${l}</button>`).join("")}</div>
+   <details class="filters"><summary>Filtrar y ordenar <span>${active?active+" activo"+(active>1?"s":""):"orden de la ruta"}</span></summary><div class="fbody">
+     <div class="flabel">Dificultad</div><div class="seg">${pills("fDiff",[["all","Todas"],["f","Fácil · 10"],["m","Media · 20"],["d","Difícil · 30"],["l","Legendaria · 100"]])}</div>
+     <div class="flabel">Temática</div><div class="seg">${pills("fTheme",[["all","Todas"],...Object.entries(THEMES)])}</div>
+     <div class="flabel">Ordenar por</div><div class="seg">${pills("sort",[["day","Orden de la ruta"],["diff","Dificultad"],["theme","Temática"],["todo","Pendientes primero"]])}</div>
+   </div></details>`;
+  if(!list.length) return html+`<div class="empty">No hay estatuillas con estos filtros.</div>`;
+  const keyF={day:s=>s.d, diff:s=>s.x, theme:s=>s.t, todo:s=>(state.me&&findsFor(s.id).some(f=>f.pid===state.me))?"hecho":"pend"}[state.sort];
+  const order={day:DAY_ORDER, diff:["f","m","d","l"], theme:Object.keys(THEMES), todo:["pend","hecho"]}[state.sort];
+  const label={day:k=>DAYS[k], diff:k=>DIFF[k].n, theme:k=>THEMES[k], todo:k=>k==="pend"?"Te faltan":"Ya las tienes"}[state.sort];
+  for(const k of order){
+    const g=list.filter(s=>keyF(s)===k); if(!g.length) continue;
+    const cls=state.sort==="day"?k:"other";
+    html+=`<div class="grouph ${cls}">${esc(label(k))}<span>${g.filter(s=>findsFor(s.id).length).length}/${g.length} vistas por el grupo</span></div><div class="list">${g.map(card).join("")}</div>`;
+  }
+  return html;
+}
+function viewRank(){
+  const rows=PLAYERS.map(p=>({p,st:playerStats(p.id)})).sort((a,b)=>b.st.pts-a.st.pts||b.st.n-a.st.n||a.p.name.localeCompare(b.p.name));
+  const any=rows.some(r=>r.st.pts>0);
+  let html=banner();
+  if(any){
+    const pod=(r,cls)=>r?`<div class="pod ${cls}">${av(r.p)}<span class="nm">${esc(r.p.name)}</span><div class="stand">${r.st.pts}<small>puntos</small></div></div>`:"<div></div>";
+    html+=`<div class="podium">${pod(rows[1],"p2")}${pod(rows[0],"p1")}${pod(rows[2],"p3")}</div>`;
+  } else html+=`<div class="empty"><p class="big">Aún no hay puntos</p><p>La primera estatuilla del viernes es la rana Gustavo, en el free tour.</p></div>`;
+  html+=`<div class="rank">`;
+  rows.forEach((r,i)=>{
+    const tie=i>0&&rows[i-1].st.pts===r.st.pts;
+    const badges=Object.keys(THEMES).filter(t=>totalByTheme[t]&&r.st.byTheme[t]>=totalByTheme[t]).map(t=>`<span class="badge">Completó ${esc(THEMES[t])}</span>`);
+    if(r.st.firsts>=3) badges.push(`<span class="badge">Ojo de halcón: primero en ${r.st.firsts}</span>`);
+    if(r.st.fs.some(f=>BYID[f.sid].x==="l")) badges.push(`<span class="badge">¡Encontró a Drácula!</span>`);
+    if(r.st.n>=TOTAL) badges.push(`<span class="badge">¡Las encontró todas!</span>`);
+    html+=`<div class="rk"><span class="pos">${tie?"=":i+1}</span>${av(r.p)}
+      <span><span class="nm">${esc(r.p.name)}</span><span class="sub" style="display:block">${r.st.n} ${r.st.n===1?"encontrada":"encontradas"} · primero en ${r.st.firsts}</span></span>
+      <span class="score">${r.st.pts}</span>
+      <div style="grid-column:1/-1"><div class="bars">${Object.keys(THEMES).map(t=>{const tot=totalByTheme[t]||1,v=r.st.byTheme[t];return `<div class="bar"><span>${esc(THEMES[t])}</span><span class="track"><span class="fill" style="width:${Math.round(100*v/tot)}%;background:${r.p.color}"></span></span><span style="text-align:right;font-variant-numeric:tabular-nums">${v}/${tot}</span></div>`}).join("")}</div>
+      ${badges.length?`<div class="badges">${badges.join("")}</div>`:""}</div></div>`;
+  });
+  html+=`</div>`;
+  const last=Object.values(state.finds).filter(validFind).sort((a,b)=>b.ts-a.ts).slice(0,6);
+  if(last.length) html+=`<div class="grouph other">Últimos hallazgos</div><div class="feed">${last.map(f=>`<div class="it">${av(PBYID[f.pid])}<span style="flex:1"><b>${esc(PBYID[f.pid].name)}</b> encontró ${esc(BYID[f.sid].n)}<span class="note" style="display:block">${esc(when(f.ts))} · +${pointsOf(f)}</span></span></div>`).join("")}</div>`;
+  return html+`<div class="prose note" style="margin-top:16px"><table class="pt"><tr><th>Dificultad</th><th>Puntos</th></tr><tr><td>Fácil</td><td>10</td></tr><tr><td>Media</td><td>20</td></tr><tr><td>Difícil</td><td>30</td></tr><tr><td>Legendaria (Drácula, desaparecido)</td><td>100</td></tr></table><p>Ver la pista 2 deja la estatuilla en el 80 % de los puntos; ver la ubicación exacta, en el 60 %. Quien la encuentra primero suma ${FIRST_BONUS} puntos extra.</p></div>`;
+}
+function viewAlbum(){
+  const ps=Object.entries(state.photos).filter(([k,p])=>p&&BYID[p.sid]&&PBYID[p.pid]&&photoOf(p.sid,p.pid)&&state.finds[k]).map(([k,p])=>p).sort((a,b)=>b.ts-a.ts);
+  if(!ps.length) return banner()+`<div class="empty"><p class="big">El álbum está vacío</p><p>Al marcar una estatuilla, haced una foto: aparecerá aquí en los cuatro móviles.</p></div>`;
+  return banner()+`<div class="album">${ps.map(p=>`<button class="ph" data-open="${p.sid}"><img alt="${esc(BYID[p.sid].n)}" src="${esc(photoOf(p.sid,p.pid))}" loading="lazy"><span class="phc">${av(PBYID[p.pid])}<span><b>${esc(BYID[p.sid].n)}</b><span class="note">${esc(when(p.ts))}</span></span></span></button>`).join("")}</div>`;
+}
+function viewInfo(){
+  return `<div class="prose">${banner()}
+   <h3 style="margin-top:4px">¿Quién usa este móvil?</h3>
+   <div class="choose">${PLAYERS.map(p=>`<button data-w="${p.id}" aria-pressed="${state.me===p.id}">${av(p)}<span>${esc(p.name)}</span></button>`).join("")}</div>
+   <h3>Cómo se juega</h3>
+   <ul>
+    <li>Son las ${S.length} estatuillas de nuestra ruta del viernes y el sábado, en el orden en que pasamos.</li>
+    <li>La partida es <b>común</b>: lo que marca cualquiera, con su foto, aparece al momento en los cuatro móviles.</li>
+    <li>Cada estatuilla tiene <b>3 pistas</b>. La primera es gratis. La segunda deja la estatuilla en el 80 % de los puntos y la ubicación exacta, en el 60 %. Las pistas cuentan para quien usa este móvil.</li>
+    <li>Cuando la veáis, pulsad <b>«¡La he encontrado!»</b>, elegid quién ha sido y haced una foto. Quien la ve <b>primero</b> gana ${FIRST_BONUS} puntos extra.</li>
+    <li>Son de bronce, miden entre 10 y 20 cm y casi siempre están a la altura de la rodilla o más abajo: <b>mirad hacia abajo</b>, a barandillas, postes y muros.</li>
+    <li>Algunas desaparecen. Si en el sitio no hay nada, seguid con la siguiente.</li>
+    <li>Sin cobertura también se puede marcar: se guarda en el móvil y se sube solo cuando vuelve la conexión.</li>
+   </ul>
+   <h3>Guardarla en el iPhone</h3>
+   <p class="note">En Safari: botón de compartir → «Añadir a pantalla de inicio». Se abrirá a pantalla completa, con su icono.</p>
+  </div>`;
+}
+function bindMain(){
+  const m=document.getElementById("main");
+  m.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{state[b.dataset.f]=b.dataset.v;render()});
+  m.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openStatue(b.dataset.open));
+  m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>setMe(b.dataset.w));
+}
+const WELCOME = {mama:"Seguro que pierdes.", marina:"Estírate, que tienes chepa.", carmen:"Suerte, primita.", quique:"Seguro que ganas."};
+function welcome(id){
+  const p=PBYID[id]; if(!p) return;
+  let w=document.getElementById("welcome");
+  if(!w){ w=document.createElement("div"); w.id="welcome"; document.body.appendChild(w); }
+  w.innerHTML=`<div class="wcard" role="dialog" aria-modal="true" aria-labelledby="wtitle"><span class="av wav" style="background:${p.color}">${esc(p.name.charAt(0))}</span><h2 id="wtitle">¡Hola, ${esc(p.name)}!</h2><p class="wmsg">${esc(WELCOME[id]||"¡Suerte en la caza!")}</p><button class="btn primary" id="wgo">¡A cazar!</button></div>`;
+  w.classList.add("on"); buzz(40);
+  w.querySelector("#wgo").onclick=()=>w.classList.remove("on");
+}
+function setMe(id){ const changed=state.me!==id; state.me=id; lsSet("me",id); closeSheet(); if(changed) welcome(id); }
+
+/* ===================== HOJAS ===================== */
+let sheetOpen=null;
+const wrap=document.getElementById("sheetwrap"), sheet=document.getElementById("sheet");
+function closeSheet(){wrap.classList.remove("open");sheetOpen=null;render()}
+wrap.addEventListener("click",e=>{if(e.target===wrap)closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+function showSheet(fn){sheetOpen=fn;wrap.classList.add("open");fn()}
+
+function openStatue(sid){
+  const drawS=function(){
+    const s=BYID[sid], d=DIFF[s.x], fs=findsFor(sid), me=PBYID[state.me];
+    const lvl=me?hintLevel(sid,state.me):1, myFind=me&&fs.find(f=>f.pid===state.me);
+    const y=sheet.scrollTop;
+    let h=`<div class="grab"></div>
+      <div class="cmeta" style="margin-bottom:8px"><span class="tag ${d.c}">${d.n} · ${d.p} pts</span><span class="tag">${esc(THEMES[s.t])}</span><span class="tag" style="color:${DAYCOL[s.d]}">${esc(DAYS[s.d])}</span></div>
+      <h2>${esc(s.n)}</h2><p class="note" style="margin-top:0">${esc(s.w)}</p><p>${esc(s.a)}</p>
+      ${s.gone?`<div class="banner leg">Desapareció en julio de 2026. Si ha vuelto y la encontráis, vale ${d.p} puntos.</div>`:""}
+      <div class="hint"><h3>Pista 1</h3>${esc(s.h[0])}</div>`;
+    if(lvl>=2) h+=`<div class="hint"><h3>Pista 2 · la zona</h3>${esc(s.h[1])}</div>`;
+    if(lvl>=3) h+=`<div class="hint exact"><h3>Ubicación exacta</h3>${esc(s.h[2])}</div>`;
+    if(lvl<3){
+      const pct=lvl===1?80:60;
+      h+=`<div class="hint locked"><span class="note">${me?(myFind?"Ya la tienes: puedes ver las pistas sin perder puntos.":`Si la abres, valdrá ${basePts(s,lvl+1)} pts (${pct} %) para ${esc(me.name)}.`):"Di quién eres (arriba) para pedir pistas."}</span><button class="btn small" id="nexthint" ${me?"":"disabled"}>${lvl===1?"Ver pista 2":"Ver ubicación"}</button></div>`;
+    }
+    h+=`<div class="row"><a class="btn" href="${mapsUrl(s)}" target="_blank" rel="noopener">Abrir en Maps</a><a class="btn" href="${photosUrl(s)}" target="_blank" rel="noopener">Ver fotos</a></div>`;
+    if(fs.length) h+=`<div class="flabel" style="margin-top:14px">La han encontrado</div><div class="whofound">${fs.map((f,i)=>{const ph=photoOf(f.sid,f.pid);return `<div class="line">${av(PBYID[f.pid])}<span style="flex:1"><b>${esc(PBYID[f.pid].name)}</b>${i===0?` <span class="tag easy">primero</span>`:""}<span class="note" style="display:block">${esc(when(f.ts))} · ${pointsOf(f)} pts</span></span>${ph?`<img alt="Foto de prueba" src="${esc(ph)}">`:""}<button class="btn small danger" data-undo="${esc(f.sid+"__"+f.pid)}">Quitar</button></div>`}).join("")}</div>`;
+    if(fs.length<PLAYERS.length) h+=`<div class="row" style="margin-top:16px"><button class="btn primary" id="found">¡La he encontrado!</button></div>`;
+    h+=`<div class="row"><button class="btn" id="close">Cerrar</button></div>`;
+    sheet.innerHTML=h; sheet.scrollTop=y;
+    sheet.querySelector("#close").onclick=closeSheet;
+    const nh=sheet.querySelector("#nexthint"); if(nh) nh.onclick=()=>{
+      if(!myFind) return confirmSheet(`Ver ${lvl===1?"la pista 2":"la ubicación exacta"} deja «${s.n}» en ${basePts(s,lvl+1)} puntos para ${me.name}.`, "Ver la pista", ()=>{ write("hints",sid+"__"+state.me,{sid,pid:state.me,level:lvl+1}); openStatue(sid); }, ()=>openStatue(sid));
+      write("hints",sid+"__"+state.me,{sid,pid:state.me,level:lvl+1}); drawS();
+    };
+    const fb_=sheet.querySelector("#found"); if(fb_) fb_.onclick=()=>foundSheet(sid);
+    sheet.querySelectorAll("[data-undo]").forEach(b=>b.onclick=()=>{
+      const f=state.finds[b.dataset.undo]; const nm=f&&PBYID[f.pid]?PBYID[f.pid].name:"";
+      confirmSheet(`¿Quitar el hallazgo de ${nm}? Se quitará en los cuatro móviles, con su foto y sus puntos.`,"Quitar",()=>{write("finds",b.dataset.undo,null);write("photos",b.dataset.undo,null);openStatue(sid)},()=>openStatue(sid));
+    });
+  };
+  drawS.live=true; showSheet(drawS);
+}
+function foundSheet(sid){
+  let sel = state.me && !findsFor(sid).some(f=>f.pid===state.me) ? state.me : null, photo=null, busy=false;
+  showSheet(function draw(){
+    const s=BYID[sid], fs=findsFor(sid), avail=PLAYERS.filter(p=>!fs.some(f=>f.pid===p.id));
+    let h=`<div class="grab"></div><h2>¿Quién ha encontrado «${esc(s.n)}»?</h2>`;
+    if(!avail.length){ sheet.innerHTML=h+`<p>Ya la habéis encontrado todos.</p><div class="row"><button class="btn" id="back">Volver</button></div>`; sheet.querySelector("#back").onclick=()=>openStatue(sid); return; }
+    h+=`<div class="choose">${avail.map(p=>`<button data-pick="${p.id}" aria-pressed="${sel===p.id}">${av(p)}<span>${esc(p.name)}</span><span class="note" style="margin-left:auto">+${basePts(s,hintLevel(sid,p.id))+(fs.length?0:FIRST_BONUS)} pts</span></button>`).join("")}</div>
+     <div class="flabel">Foto de prueba (la verán todos)</div>
+     <div class="row">${photo?`<img alt="Foto de prueba" src="${photo}" style="max-width:120px;border-radius:12px;flex:none">`:""}<button class="btn" id="takephoto">${busy?"Preparando la foto…":photo?"Cambiar la foto":"Hacer o elegir foto"}</button></div>
+     <div class="row"><button class="btn" id="back">Volver</button><button class="btn primary" id="save" ${sel&&!busy?"":"disabled"}>Guardar hallazgo</button></div>`;
+    sheet.innerHTML=h;
+    sheet.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{sel=b.dataset.pick;draw()});
+    sheet.querySelector("#back").onclick=()=>openStatue(sid);
+    sheet.querySelector("#takephoto").onclick=()=>{const inp=document.getElementById("photo");inp.value="";inp.onchange=async()=>{const f=inp.files&&inp.files[0];if(!f)return;busy=true;draw();try{photo=await shrink(f)}catch(e){toast("No se ha podido leer la foto. Prueba con otra.")}busy=false;draw()};inp.click()};
+    sheet.querySelector("#save").onclick=(e)=>{
+      if(!sel||busy) return; e.target.disabled=true;
+      const key=sid+"__"+sel;
+      if(state.finds[key]){ openStatue(sid); return; } // ya estaba (doble toque o la marcó otro móvil)
+      const ts=Date.now(), lvl=hintLevel(sid,sel);
+      const pts=basePts(s,lvl)+(findsFor(sid).length?0:FIRST_BONUS);
+      if(photo) write("photos",key,{sid,pid:sel,ts,data:photo});
+      write("finds",key,{sid,pid:sel,ts,hints:lvl,photo:!!photo});
+      openStatue(sid); celebrate(pts, PBYID[sel].name);
+    };
+  });
+}
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{try{const max=720;let w=img.naturalWidth,h=img.naturalHeight;if(!w||!h)throw 0;const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+      const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      let q=0.72,out=c.toDataURL("image/jpeg",q);while(out.length>180000&&q>0.3){q-=0.08;out=c.toDataURL("image/jpeg",q)}
+      if(out.length>700000) throw 0; res(out)}catch(e){URL.revokeObjectURL(url);rej(e)}};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url;
+  });
+}
+function confirmSheet(msg,label,fn,onCancel){
+  showSheet(function(){
+    sheet.innerHTML=`<div class="grab"></div><h2>¿Seguro?</h2><p></p><div class="row"><button class="btn" id="no">Cancelar</button><button class="btn primary" id="yes"></button></div>`;
+    sheet.querySelector("p").textContent=msg; sheet.querySelector("#yes").textContent=label;
+    sheet.querySelector("#no").onclick=()=>{ if(onCancel) onCancel(); else closeSheet(); };
+    sheet.querySelector("#yes").onclick=()=>{ fn(); if(!sheetOpen||!sheetOpen.live){} render(); };
+  });
+}
+function whoSheet(){
+  showSheet(function draw(){
+    sheet.innerHTML=`<div class="grab"></div><h2>¿Quién usa este móvil?</h2><p class="note">Las pistas que abras cuentan para esta persona. Se puede cambiar cuando quieras.</p>
+     <div class="choose">${PLAYERS.map(p=>`<button data-w="${p.id}" aria-pressed="${state.me===p.id}">${av(p)}<span>${esc(p.name)}</span></button>`).join("")}</div>
+     <div class="row"><button class="btn primary" id="done" ${state.me?"":"disabled"}>Empezar a cazar</button></div>`;
+    sheet.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{state.me=b.dataset.w;render();draw()});
+    sheet.querySelector("#done").onclick=()=>{ const prev=lsGet("me",null); lsSet("me",state.me); closeSheet(); if(prev!==state.me) welcome(state.me); };
+  });
+}
+document.getElementById("who").onclick=whoSheet;
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.getElementById("main").scrollTop=0;closeSheet()});
+
+/* ===================== ARRANQUE ===================== */
+render();
+connect();
+setTimeout(()=>{ document.getElementById("splash").classList.add("hide"); if(!state.me) whoSheet(); }, reduce?200:1400);
+document.getElementById("splash").addEventListener("click",e=>e.currentTarget.classList.add("hide"));
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ flushOutbox(); if(!fb) connect(); } });
+if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+
+</script>
+</body>
+</html>
